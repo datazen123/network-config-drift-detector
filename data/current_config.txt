@@ -1,0 +1,35 @@
+! SYNTHETIC EXAMPLE CONFIG - not from any real device.
+!
+hostname EDGE-RTR-01
+!
+banner login ^
+****************************************************************
+* This is a U.S. Government (USG) information system. Unauthorized
+* access, use, or disclosure is prohibited and may be subject to
+* criminal and civil penalties. By using this system you consent
+* to monitoring for law enforcement and other purposes.
+****************************************************************
+^
+!
+login on-failure log
+login on-success log
+!
+ip ssh server algorithm mac hmac-sha2-256
+!
+interface GigabitEthernet0/1
+ description Uplink to core switch (temp)
+ ip address 10.20.1.1 255.255.255.0
+ no shutdown
+!
+interface GigabitEthernet0/2
+ description Unused - reserved for future expansion
+ no shutdown
+!
+ip access-list extended PERIMETER-IN
+ remark Allow HTTPS to the management portal only
+ permit tcp any host 10.20.1.5 eq 443
+ remark TEMP - vendor requested SSH access for troubleshooting 2026-07-10
+ permit tcp any host 10.20.1.5 eq 22
+ deny ip any any log
+!
+end

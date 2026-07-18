@@ -1,0 +1,47 @@
+[
+  {
+    "rule_id": "V-215687",
+    "stig": "Cisco IOS Router NDM STIG, V3R8",
+    "title": "Password Storage Protection",
+    "requirement": "The Cisco router must only store cryptographic representations of passwords.",
+    "fix_summary": "Enable `service password-encryption` on the router.",
+    "check_type": "substring",
+    "check_pattern": "service password-encryption"
+  },
+  {
+    "rule_id": "V-215669",
+    "stig": "Cisco IOS Router NDM STIG, V3R8",
+    "title": "Mandatory DoD Notice Display",
+    "requirement": "The Cisco router must display the Standard Mandatory DoD Notice and Consent Banner before granting access.",
+    "fix_summary": "Configure `banner login` with the complete DoD-approved warning text.",
+    "check_type": "substring",
+    "check_pattern": "banner login"
+  },
+  {
+    "rule_id": "V-215668",
+    "stig": "Cisco IOS Router NDM STIG, V3R8",
+    "title": "Failed Login Attempt Lockout",
+    "requirement": "The Cisco router must enforce a limit of three consecutive invalid logon attempts, locking the account for 15 minutes.",
+    "fix_summary": "Configure `login block-for 900 attempts 3 within 120`.",
+    "check_type": "substring",
+    "check_pattern": "login block-for"
+  },
+  {
+    "rule_id": "V-215699",
+    "stig": "Cisco IOS Router NDM STIG, V3R8",
+    "title": "Remote Maintenance Session Integrity",
+    "requirement": "The Cisco router must use a FIPS-validated HMAC to protect the integrity of remote maintenance sessions.",
+    "fix_summary": "Configure `ip ssh server algorithm mac hmac-sha2-256`.",
+    "check_type": "substring",
+    "check_pattern": "ip ssh server algorithm mac hmac-sha2-256"
+  },
+  {
+    "rule_id": "V-215704",
+    "stig": "Cisco IOS Router NDM STIG, V3R8",
+    "title": "Login Attempt Auditing",
+    "requirement": "The Cisco router must generate audit records when successful and unsuccessful logon attempts occur.",
+    "fix_summary": "Enable `login on-failure log` and `login on-success log`.",
+    "check_type": "substring_all",
+    "check_pattern": ["login on-failure log", "login on-success log"]
+  }
+]
