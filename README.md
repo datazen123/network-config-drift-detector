@@ -10,24 +10,40 @@ pass/fail itself.
 
 ## Why this exists
 
-Three concrete, current signals pointed here, not at a generic "AI +
-networking" idea:
+Grounded in real federal award data, verified via USASpending.gov (not
+just press/web claims), plus two signals that are directionally real but
+explicitly caveated below:
 
-- The Army's Empower AI-led **Army Transport Edge (ATE)** modernization -
-  a real ~$40M effort introducing software-defined networking across 52
-  sites in South Korea - was reported by Stars and Stripes as "nearly
-  complete" in February 2026. A major network modernization that just
-  finished creates a near-term, predictable need: monitoring and
-  drift-detection on the network that was just stood up.
-- **GovCIO's own confirmed scope on USACISA-P** (the U.S. Army
-  Communication Information Systems Activity-Pacific program serving
-  UNC/CFC/USFK - the same contract vehicle referenced elsewhere in this
-  portfolio) is "service and maintain all IT and network services across
-  the coalition network, CENTRIXS-K." Network config monitoring sits
-  inside that scope directly.
+- **Confirmed, recurring, Korea-specific**: IDIQ `W91QVN17D0038` covers
+  CCTV/physical-security-network maintenance task orders at Camp
+  Humphreys and Area IV (Daegu) - real, dated, small-firm (SM Global,
+  Cydaptiv Solutions, Image & Information Co., EC Control) task orders in
+  exactly this repo's category: monitoring and maintaining a network of
+  security-relevant infrastructure. This is the strongest single piece of
+  confirmed evidence behind this repo.
+- **Reported but not independently verified**: the Army's Empower AI-led
+  **Army Transport Edge (ATE)** modernization (~$27-40M, software-defined
+  networking across 52 Korea sites) is corroborated by Empower AI's own
+  press release and Stars and Stripes (Feb 2026, "nearly complete," full
+  legacy cutover targeted Sept 26, 2026) - but a direct USASpending search
+  could not locate the underlying award record, and **no follow-on
+  operations/monitoring contract has been posted on SAM.gov** as of a July
+  2026 check. This repo anticipates that need ahead of the cutover date,
+  it doesn't point to an already-funded one.
+- **Web-sourced claim that direct award-data search could not confirm**:
+  GovCIO's own careers page describes their USACISA-P scope as "service
+  and maintain all IT and network services across the coalition network,
+  CENTRIXS-K" - but a direct USASpending prime/subaward search for GovCIO
+  in Korea returned zero records, and the SecureBine/GovCIO/USACISA-P
+  partnership claim (from earlier web search) is likewise unconfirmed in
+  primary federal data. **Worth asking David directly** what SecureBine's
+  actual current scope is, rather than repeating an unverified web claim.
+  (Confirmed instead, same program: SAIC and GDIT hold/held the actual
+  USACISA-P network-operations task orders - see `claude-ops-agent`.)
 - SecureBine's own certified technology partnerships are **Cisco and
   Juniper** specifically - this repo's actual named vendor, not an
-  adjacent guess.
+  adjacent guess (this one is a direct fact about SecureBine's public
+  site, not something that needs award-data verification).
 
 ## What's real vs. illustrative
 
