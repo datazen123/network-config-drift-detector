@@ -1,4 +1,0 @@
-# file: /Users/z0q1/Documents/wk-securebind/network-config-drift-detector/drift_detector.py
-# hypothesis_version: 6.141.1
-
-[100, 1500, 3000, '+', '+++', '-', '---', '30-day', '90-day', '@@', 'CAT I', 'CAT II', 'CAT III', 'FAIL', '^\\s*shutdown\\s*$', '__main__', 'added', 'assistant', 'baseline_config.txt', 'cat_i_open', 'cat_ii_open', 'cat_iii_open', 'cci', 'change', 'check_pattern', 'check_type', 'config_diff', 'content', 'critical', 'current_config.txt', 'data', 'deductions', 'executive_summary', 'findings', 'high', 'id', 'immediate', 'interface', 'interface_results', 'is_shutdown', 'item', 'line', 'nist_800_53_control', 'pass', 'poam_milestone', 'poam_priority', 'points', 'remediation', 'removed', 'requirement', 'role', 'rule_id', 'score', 'severity', 'should_be_shutdown', 'source_id', 'status', 'stig_rule_results', 'stig_rules.json', 'substring', 'substring_all', 'text', 'title', 'user', 'verification_note', 'verified']
