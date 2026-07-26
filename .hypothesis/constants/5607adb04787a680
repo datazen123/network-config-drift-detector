@@ -1,0 +1,4 @@
+# file: /Users/z0q1/Documents/wk-securebind/network-config-drift-detector/llm_client.py
+# hypothesis_version: 6.141.1
+
+[0.0, 3000, 'ANTHROPIC_API_KEY', 'ASKSAGE_API_KEY', 'ASKSAGE_EMAIL', 'Content-Type', 'OPENAI_API_KEY', 'access_token', 'anthropic', 'api_key', 'application/json', 'asksage', 'claude-sonnet-4-5', 'content', 'dataset', 'email', 'gpt-5', 'live', 'message', 'model', 'none', 'openai', 'openai_gpt', 'role', 'system', 'system_prompt', 'temperature', 'x-access-tokens']

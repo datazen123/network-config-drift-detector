@@ -16,3 +16,7 @@ jobs:
           python-version: "3.11"
       - run: pip install -r requirements-dev.txt
       - run: pytest -q
+      - name: bandit (reported, non-blocking on low-severity findings)
+        run: |
+          bandit -r . -x "./.venv,./test_drift_detector.py,./test_drift_detector_properties.py" \
+            --severity-level medium

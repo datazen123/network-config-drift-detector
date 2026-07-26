@@ -2,11 +2,40 @@
 
 Deterministic code computes the line-level diff between a baseline and
 current Cisco IOS-style router config, and checks the current config
-against real DISA Cisco IOS Router STIG rules. Claude's job is the part
-that's actually a language task: explaining the semantic risk of each
-drift and STIG failure, prioritizing them, and drafting a
-remediation-ready report - it never computes the diff or decides
-pass/fail itself.
+against real DISA Cisco IOS Router STIG rules - including each rule's real
+CAT I/II/III severity rating - to compute a weighted compliance scorecard.
+Claude's job is the part that's actually a language task: explaining the
+semantic risk of each drift and STIG failure, prioritizing them, and
+drafting a remediation-ready report with POA&M-style milestones - it never
+computes the diff, the score, or decides pass/fail itself.
+
+## Compliance scorecard and POA&M drafting
+
+Every STIG rule in `data/stig_rules.json` now carries its real CAT I/II/III
+severity rating, verified directly against
+[cyber.trackr.live](https://cyber.trackr.live/stig/Cisco_IOS_Router_NDM/2/8)'s
+published Cisco IOS Router NDM STIG data (two independent secondary sources
+disagreed on one rule's severity during this verification - resolved
+against the primary source rather than either guess). `compute_compliance_score()`
+turns open findings into a weighted 0-100 score using those real severity
+ratings.
+
+**Said precisely, not oversold**: DISA's actual internal CCRI grading
+methodology isn't fully public, so this is *not* a reproduction of it - the
+severity data feeding the score is real and verified; the point-deduction
+weights on top of it (CAT I costs more than CAT II) are a defensible,
+clearly-labeled illustrative model, the same "real data, honestly-labeled
+logic on top" split this repo's interface-shutdown check already uses.
+
+For every failed check, Claude also drafts a short POA&M-style entry
+(milestone + priority tier - immediate/30-day/90-day, mapped directly from
+the real CAT rating) - the same category of artifact a real RMF/eMASS
+Plan of Action and Milestones uses, though not literally eMASS-formatted
+output. `verify_findings()` now checks two more things deterministically:
+every failed-check finding has a non-empty milestone, and its priority tier
+matches what the real severity rating requires (CAT I → immediate) -
+findings that get this wrong are flagged the same
+`[NEEDS HUMAN VERIFICATION]` way as a bad citation.
 
 ## Why this exists
 
@@ -50,7 +79,15 @@ explicitly caveated below:
 - `data/stig_rules.json` - **real** DISA Cisco IOS Router STIG rules,
   fetched from public STIG reference content (rule IDs V-215687, V-215669,
   V-215668, V-215699, V-215704 from the Cisco IOS Router NDM STIG, V3R8):
-  exact rule ID, title, requirement text, and fix guidance.
+  exact rule ID, title, requirement text, fix guidance, real CAT I/II/III
+  severity rating (V-215687 and V-215699 are CAT I; the rest are CAT II),
+  and each rule's real CCI ID and NIST SP 800-53 Rev 5 control mapping
+  (e.g. V-215687 → CCI-000196 → **IA-5**), verified against
+  [cyber.trackr.live](https://cyber.trackr.live/stig/Cisco_IOS_Router_NDM/2/8).
+  This is the actual traceability chain a real RMF/eMASS package uses -
+  STIG finding → CCI → 800-53 control - not something this repo invented;
+  every finding in the printed report now cites the real control ID
+  alongside the STIG rule.
 - `data/baseline_config.txt` / `data/current_config.txt` - **illustrative**,
   synthetic Cisco IOS-syntax configs written for this demo, not captured
   from any real device. Not every real STIG check is implemented -
@@ -67,33 +104,67 @@ data/baseline_config.txt   data/current_config.txt   data/stig_rules.json
   compute_diff()          check_stig_rules() +      (real STIG rule IDs
   (difflib, code-owned)   check_inactive_interfaces()   and requirements)
         |                          |
-        +------------ combined ---+
+        +--- build_payload(): every item gets a stable id (diff:N, ---+
+             stig:<rule_id>, interface:<name>) ---+
                        |
                        v
-              Claude explains, prioritizes,
-              and drafts remediation commands
+              Claude explains, prioritizes, drafts remediation commands,
+              and cites a source_id on every finding
                        |
                        v
-              printed drift & compliance report
+              verify_findings() - deterministic, code-owned: does each
+              source_id resolve? does severity contradict a passing check?
+                       |
+              +--------+--------+
+              v                 v
+      all findings verified   any flagged -> ONE bounded correction pass
+              |                 (Claude fixes only the flagged findings)
+              v                 v
+              +--- printed report, unverified findings tagged ---+
+                    "[NEEDS HUMAN VERIFICATION]"
 ```
 
-## A real, honestly-reported limitation
+## Closing the loop on a real, previously-honestly-reported limitation
 
-Across live runs, Claude occasionally blends details between two nearby,
-related config changes when synthesizing its prose explanation - e.g.
-attributing an interface description change to the wrong interface ID,
-even though the underlying deterministic classification (which STIG rule
-failed, which interface is non-compliant) stays correct. This is reported
-rather than hidden: the structured findings (severity, rule ID,
-remediation command) are reliable; the free-text explanation occasionally
-needs a human sanity-check on cross-references between findings.
+Earlier versions of this repo's README documented a real, live-observed
+failure mode: Claude occasionally blended details between two nearby,
+related config changes in its prose explanation - e.g. attributing an
+interface description change to the wrong interface ID - even though the
+underlying deterministic classification stayed correct. That was being
+caught by manual read-through, which doesn't scale and isn't something a
+DoD-adjacent client would accept as the actual safeguard.
+
+`verify_findings()` (pure Python, fully unit-tested, no LLM call) now checks
+two things deterministically for every finding Claude writes: (1) does its
+`source_id` actually resolve to a real diff line, STIG rule, or interface
+from the data Claude was given - this is exactly the class of error the
+blending bug produced, since a blended finding cites (or fails to cite) the
+wrong thing; and (2) does the claimed severity contradict the item's actual
+status (e.g. `critical` severity cited against something that actually
+passed). Anything flagged gets one bounded correction pass - Claude is
+shown only the flagged findings plus the original data and asked to fix
+just those - before the report is finalized. Findings still flagged after
+that correction pass are printed with an explicit
+**`[NEEDS HUMAN VERIFICATION]`** tag rather than presented as equally
+reliable, so a reviewer knows exactly which lines earned a second look and
+which didn't.
+
+This is the same evaluator-optimizer / reflection pattern used in
+`claude-ops-agent`'s bounded tool-call retry, applied to content
+verification instead of format enforcement - grounded in the DoD's
+published **Traceable** AI Ethical Principle (see that repo's README for
+the full citation): every finding is auditable back to the exact
+deterministic fact it's about, in code, not by asking a human to eyeball
+the whole report.
 
 - `llm_client.py` - thin provider adapter. Anthropic is the tested backend
   used throughout this repo. OpenAI and Ask Sage adapters are included for
   the same interface, but have **not** been run against live credentials in
   this repo - treat them as reference code until verified.
-- `drift_detector.py` - the diff, the STIG/interface checks, and the
-  Claude explanation call.
+- `drift_detector.py` - the diff, the STIG/interface checks, the payload
+  id-tagging (`build_payload`), the Claude explanation call, the
+  deterministic verifier (`verify_findings`), and the bounded correction
+  pass.
 
 ## Running it
 
@@ -107,12 +178,21 @@ python drift_detector.py
 ## Tests + CI
 
 `test_drift_detector.py` covers every deterministic function (the diff,
-both STIG check types, the interface check, JSON-fence stripping) - no
-API key or network needed, safe for CI on every push:
+both STIG check types, the interface check, JSON-fence stripping,
+`build_payload`'s id-tagging, `compute_compliance_score`'s weighting and
+zero-floor behavior, and every branch of `verify_findings` - missing
+citation, unresolvable citation, severity/status contradiction, missing
+POA&M milestone, wrong POA&M priority tier, and the passing case) - no API
+key or network needed, safe for CI on every push. `test_drift_detector_properties.py`
+adds Hypothesis property-based tests - e.g. the compliance score is proven
+to stay in [0,100] and never increase when a passing check flips to FAIL,
+across hundreds of generated severity-mix inputs, not one hand-picked
+example:
 
 ```bash
 pip install -r requirements-dev.txt
 pytest -q
+bandit -r . -x "./.venv" --severity-level medium  # security lint, CI runs this too
 ```
 
 ## Security notes
