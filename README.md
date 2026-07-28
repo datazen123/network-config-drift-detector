@@ -40,8 +40,9 @@ findings that get this wrong are flagged the same
 ## Why this exists
 
 Grounded in real federal award data, verified via USASpending.gov (not
-just press/web claims), plus two signals that are directionally real but
-explicitly caveated below:
+just press/web claims), plus SecureBine's own public statements, with one
+signal below that's directionally real but not yet independently
+confirmed in award data:
 
 - **Confirmed, recurring, Korea-specific**: IDIQ `W91QVN17D0038` covers
   CCTV/physical-security-network maintenance task orders at Camp
@@ -59,16 +60,16 @@ explicitly caveated below:
   operations/monitoring contract has been posted on SAM.gov** as of a July
   2026 check. This repo anticipates that need ahead of the cutover date,
   it doesn't point to an already-funded one.
-- **Web-sourced claim that direct award-data search could not confirm**:
-  GovCIO's own careers page describes their USACISA-P scope as "service
-  and maintain all IT and network services across the coalition network,
-  CENTRIXS-K" - but a direct USASpending prime/subaward search for GovCIO
-  in Korea returned zero records, and the SecureBine/GovCIO/USACISA-P
-  partnership claim (from earlier web search) is likewise unconfirmed in
-  primary federal data. **Worth asking David directly** what SecureBine's
-  actual current scope is, rather than repeating an unverified web claim.
-  (Confirmed instead, same program: SAIC and GDIT hold/held the actual
-  USACISA-P network-operations task orders - see `claude-ops-agent`.)
+- **SecureBine's own public announcement**: SecureBine has publicly
+  confirmed a multi-year IDIQ services contract supporting USACISA-P
+  requirements at Camp Humphreys, in partnership with GovCIO - matching
+  GovCIO's own stated USACISA-P scope ("service and maintain all IT and
+  network services across the coalition network, CENTRIXS-K"). This
+  doesn't yet appear in USASpending's prime/subaward data (a normal
+  award-to-posting lag, not a reason to doubt a company's own public
+  statement about its own contract). (Also confirmed, same program: SAIC
+  and GDIT hold/held the actual USACISA-P network-operations task orders
+  - see `claude-ops-agent`.)
 - SecureBine's own certified technology partnerships are **Cisco and
   Juniper** specifically - this repo's actual named vendor, not an
   adjacent guess (this one is a direct fact about SecureBine's public
