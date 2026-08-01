@@ -31,6 +31,8 @@ sees the result.
 - [Security notes](#security-notes)
 - [Deployment path](#deployment-path)
 
+[↑ Back to top](#network-config-drift-detector)
+
 ## Compliance scorecard and POA&M drafting
 
 Every STIG rule in `data/stig_rules.json` carries its real CAT I/II/III
@@ -66,6 +68,8 @@ failed-check finding has a non-empty milestone, and its priority tier
 matches what the real severity rating requires (CAT I → immediate).
 Findings that get this wrong are flagged the same
 `[NEEDS HUMAN VERIFICATION]` way as a bad citation.
+
+[↑ Back to top](#network-config-drift-detector)
 
 ## Why this exists
 
@@ -108,6 +112,8 @@ confirmed in award data:
   adjacent guess (this one is a direct fact about SecureBine's public
   site, not something that needs award-data verification).
 
+[↑ Back to top](#network-config-drift-detector)
+
 ## What's real vs. illustrative
 
 - `data/stig_rules.json` - **real** DISA Cisco IOS Router STIG rules,
@@ -128,6 +134,8 @@ confirmed in award data:
   `check_inactive_interfaces()` is an explicitly-documented simplification
   (config-text-only proxy for "interface should be inactive," not the
   official check procedure, which also considers live operational status).
+
+[↑ Back to top](#network-config-drift-detector)
 
 ## Architecture
 
@@ -157,6 +165,8 @@ data/baseline_config.txt   data/current_config.txt   data/stig_rules.json
               +--- printed report, unverified findings tagged ---+
                     "[NEEDS HUMAN VERIFICATION]"
 ```
+
+[↑ Back to top](#network-config-drift-detector)
 
 ## Live result
 
@@ -194,6 +204,8 @@ drafting a POA&M milestone and priority for each (immediate for the CAT I
 finding, 30-day for the CAT II), and flagging the new ACL permit rule as
 a CRITICAL, unapproved perimeter opening. **11/11 findings passed the
 deterministic verifier - no correction pass needed.**
+
+[↑ Back to top](#network-config-drift-detector)
 
 ## Closing the loop on a real, previously-honestly-reported limitation
 
@@ -237,9 +249,13 @@ the whole report.
   deterministic verifier (`verify_findings`), and the bounded correction
   pass.
 
+[↑ Back to top](#network-config-drift-detector)
+
 ## Prerequisites
 
 Python 3.9 or newer. Check with `python3 --version` before starting.
+
+[↑ Back to top](#network-config-drift-detector)
 
 ## Running it
 
@@ -255,6 +271,8 @@ python drift_detector.py
 The `python3 -m venv` step matters, not just good practice: on macOS,
 plain `pip install` can silently resolve to a leftover Python 2.7
 install instead of Python 3 - see Troubleshooting below.
+
+[↑ Back to top](#network-config-drift-detector)
 
 ## Troubleshooting
 
@@ -274,6 +292,8 @@ above (`python3 -m venv .venv && source .venv/bin/activate`), then run
 `python3 -m pip install -r requirements.txt` instead of bare `pip
 install` - that forces the install through Python 3's own pip regardless
 of what `pip` alone resolves to on your system.
+
+[↑ Back to top](#network-config-drift-detector)
 
 ## Tests + CI
 
@@ -295,6 +315,8 @@ pytest -q
 bandit -r . -x "./.venv" --severity-level medium  # security lint, CI runs this too
 ```
 
+[↑ Back to top](#network-config-drift-detector)
+
 ## Security notes
 
 - API keys are read from environment variables only, never hardcoded;
@@ -309,6 +331,8 @@ bandit -r . -x "./.venv" --severity-level medium  # security lint, CI runs this 
   retroactively) in every other repo in this portfolio; built correctly
   here from the start.
 
+[↑ Back to top](#network-config-drift-detector)
+
 ## Deployment path
 
 This demo calls the Anthropic API directly. A production version for a
@@ -320,3 +344,5 @@ includes an `AskSageClient` built from Ask Sage's
 untested pending an account).
 
 Built with [Claude Code](https://claude.com/claude-code).
+
+[↑ Back to top](#network-config-drift-detector)
