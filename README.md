@@ -1,40 +1,55 @@
 # network-config-drift-detector
 
 Deterministic code computes the line-level diff between a baseline and
-current Cisco IOS-style router config, and checks the current config
-against real DISA Cisco IOS Router STIG rules - including each rule's real
-CAT I/II/III severity rating - to compute a weighted compliance scorecard.
+current Cisco IOS-style router config, then checks the current config
+against real DISA **STIG** rules - Security Technical Implementation
+Guides, the U.S. military's official configuration-hardening checklists.
+Each rule carries a real **CAT I/II/III** severity rating (DISA's own
+scale: CAT I is the most severe, an immediate risk to confidentiality,
+integrity, or availability; CAT III the least). That data feeds a
+weighted compliance scorecard.
+
 Claude's job is the part that's actually a language task: explaining the
-semantic risk of each drift and STIG failure, prioritizing them, and
-drafting a remediation-ready report with POA&M-style milestones - it never
-computes the diff, the score, or decides pass/fail itself.
+risk of each drift and STIG failure in plain language, prioritizing them,
+and drafting a remediation-ready report with POA&M-style milestones. Not
+Claude, and not a person reading the diff by eye - the diff, the score,
+and every pass/FAIL decision are computed in code, before Claude ever
+sees the result.
 
 ## Compliance scorecard and POA&M drafting
 
-Every STIG rule in `data/stig_rules.json` now carries its real CAT I/II/III
+Every STIG rule in `data/stig_rules.json` carries its real CAT I/II/III
 severity rating, verified directly against
 [cyber.trackr.live](https://cyber.trackr.live/stig/Cisco_IOS_Router_NDM/2/8)'s
-published Cisco IOS Router NDM STIG data (two independent secondary sources
-disagreed on one rule's severity during this verification - resolved
-against the primary source rather than either guess). `compute_compliance_score()`
-turns open findings into a weighted 0-100 score using those real severity
-ratings.
+published Cisco IOS Router NDM STIG data.
 
-**Said precisely, not oversold**: DISA's actual internal CCRI grading
-methodology isn't fully public, so this is *not* a reproduction of it - the
-severity data feeding the score is real and verified; the point-deduction
-weights on top of it (CAT I costs more than CAT II) are a defensible,
-clearly-labeled illustrative model, the same "real data, honestly-labeled
-logic on top" split this repo's interface-shutdown check already uses.
+(Two independent secondary sources disagreed on one rule's severity during
+this verification - resolved against the primary source rather than
+either guess.)
 
-For every failed check, Claude also drafts a short POA&M-style entry
-(milestone + priority tier - immediate/30-day/90-day, mapped directly from
-the real CAT rating) - the same category of artifact a real RMF/eMASS
-Plan of Action and Milestones uses, though not literally eMASS-formatted
-output. `verify_findings()` now checks two more things deterministically:
-every failed-check finding has a non-empty milestone, and its priority tier
-matches what the real severity rating requires (CAT I → immediate) -
-findings that get this wrong are flagged the same
+`compute_compliance_score()` turns open findings into a weighted 0-100
+score using those real severity ratings.
+
+**What this score is, precisely**: DISA's actual internal **CCRI**
+(Command Cyber Readiness Inspection) grading methodology isn't fully
+public, so this isn't a reproduction of it. The severity data feeding the
+score is real and verified. The point-deduction weights on top of it -
+CAT I costs more than CAT II - are a defensible, clearly-labeled
+illustrative model built on that real data.
+
+**POA&M drafting**: for every failed check, Claude also drafts a short
+**POA&M** (Plan of Action & Milestones - the standard DoD document
+tracking how and when a security finding gets fixed) entry: a milestone
+plus a priority tier (immediate / 30-day / 90-day), mapped directly from
+the real CAT rating. This is the same category of artifact a real
+**RMF/eMASS** (Risk Management Framework / the DoD's official
+system-authorization tracking tool) POA&M uses - not literally
+eMASS-formatted output, but the same shape.
+
+`verify_findings()` checks two more things deterministically: every
+failed-check finding has a non-empty milestone, and its priority tier
+matches what the real severity rating requires (CAT I → immediate).
+Findings that get this wrong are flagged the same
 `[NEEDS HUMAN VERIFICATION]` way as a bad citation.
 
 ## Why this exists
@@ -44,7 +59,10 @@ just press/web claims), plus SecureBine's own public statements, with one
 signal below that's directionally real but not yet independently
 confirmed in award data:
 
-- **Confirmed, recurring, Korea-specific**: IDIQ `W91QVN17D0038` covers
+- **Confirmed, recurring, Korea-specific**: an **IDIQ** (Indefinite
+  Delivery/Indefinite Quantity - a federal contract vehicle covering
+  recurring task orders rather than one fixed scope) `W91QVN17D0038`
+  covers
   CCTV/physical-security-network maintenance task orders at Camp
   Humphreys and Area IV (Daegu) - real, dated, small-firm (SM Global,
   Cydaptiv Solutions, Image & Information Co., EC Control) task orders in
@@ -125,6 +143,43 @@ data/baseline_config.txt   data/current_config.txt   data/stig_rules.json
                     "[NEEDS HUMAN VERIFICATION]"
 ```
 
+## Live result
+
+Run end-to-end against the real Anthropic API, first attempt, no
+correction pass needed.
+
+**Config diff (9 line-level changes):**
+
+- Removed: `service password-encryption`
+- Removed: `login block-for 900 attempts 3 within 120`
+- `GigabitEthernet0/1` description changed to "...(temp)"
+- `GigabitEthernet0/2`: `shutdown` → `no shutdown`
+- ACL: 2 lines added (a remark plus `permit tcp any host 10.20.1.5 eq 22`)
+
+**STIG checks (5 checked, 2 failed):**
+
+| Rule | Title | Severity | Status |
+|---|---|---|---|
+| V-215687 | Password Storage Protection | CAT I | **FAIL** |
+| V-215668 | Failed Login Attempt Lockout | CAT II | **FAIL** |
+| V-215669 | Mandatory DoD Notice Display | CAT II | pass |
+| V-215699 | Remote Maintenance Session Integrity | CAT I | pass |
+| V-215704 | Login Attempt Auditing | CAT II | pass |
+
+**Interface check (1 checked, 1 failed):** `GigabitEthernet0/2` is
+described "Unused - reserved for future expansion" but is configured
+`no shutdown` (active) instead of `shutdown`.
+
+**Result: compliance scorecard 65/100** (CAT I open: 1, CAT II open: 1,
+CAT III/ungraded open: 1).
+
+Claude drafted 11 findings covering every diff line and every failed
+check - correctly assigning the two STIG failures CRITICAL/HIGH severity,
+drafting a POA&M milestone and priority for each (immediate for the CAT I
+finding, 30-day for the CAT II), and flagging the new ACL permit rule as
+a CRITICAL, unapproved perimeter opening. **11/11 findings passed the
+deterministic verifier - no correction pass needed.**
+
 ## Closing the loop on a real, previously-honestly-reported limitation
 
 Earlier versions of this repo's README documented a real, live-observed
@@ -167,14 +222,43 @@ the whole report.
   deterministic verifier (`verify_findings`), and the bounded correction
   pass.
 
+## Prerequisites
+
+Python 3.9 or newer. Check with `python3 --version` before starting.
+
 ## Running it
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env   # fill in your own ANTHROPIC_API_KEY
 export $(grep -v '^#' .env | xargs)
 python drift_detector.py
 ```
+
+The `python3 -m venv` step matters, not just good practice: on macOS,
+plain `pip install` can silently resolve to a leftover Python 2.7
+install instead of Python 3 - see Troubleshooting below.
+
+## Troubleshooting
+
+**`ERROR: Could not find a version that satisfies the requirement
+anthropic<1.0.0,>=0.40.0 ... (from versions: none)`, alongside a "Python
+2.7 reached end of life" warning:**
+
+Your `pip` command is resolving to a Python 2.7 installation, not Python
+3 - common on macOS, where an old Python 2.7 framework install can sit
+earlier on `PATH` than Python 3. The `anthropic` package doesn't publish
+anything for Python 2 at all, hence "no versions: none" - it's not a
+network or permissions problem.
+
+Fix: create and activate a virtual environment first, exactly as shown
+above (`python3 -m venv .venv && source .venv/bin/activate`), then run
+`pip install` again inside it. If you'd rather not use a venv, run
+`python3 -m pip install -r requirements.txt` instead of bare `pip
+install` - that forces the install through Python 3's own pip regardless
+of what `pip` alone resolves to on your system.
 
 ## Tests + CI
 

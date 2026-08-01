@@ -6,7 +6,9 @@ requirement, and fix text fetched from public STIG references - see
 data/stig_rules.json and the README for sourcing). Claude's job is the
 part that's actually a language task: explaining the semantic risk of each
 drift/violation, prioritizing them, and drafting a remediation-ready
-change report - it does not compute the diff or decide pass/fail itself.
+change report. Not Claude, and not a person reading the diff by eye - the
+diff and every pass/fail decision are computed in code, before Claude
+ever sees the result.
 
 Every finding Claude writes must cite a `source_id` pointing back to a real
 STIG rule ID, interface name, or diff line from the deterministic payload it
@@ -86,13 +88,11 @@ def check_stig_rules(current_text: str, rules: list[dict]) -> list[dict]:
 
 # Deterministic, DISA-severity-weighted compliance scorecard. This is NOT a
 # reproduction of DISA's actual CCRI grading algorithm - that methodology
-# isn't fully public, and this repo doesn't pretend otherwise. What IS real:
-# the CAT I/II/III severity rating on every rule below, verified against
-# cyber.trackr.live's published STIG data (see data/stig_rules.json). The
-# point-deduction weights themselves (CAT I costs more than CAT II) are a
-# defensible, clearly-labeled illustrative model built on that real
-# severity data - the same "real data, honestly-labeled illustrative logic
-# on top" split this repo's own interface-shutdown check already uses.
+# isn't fully public. What IS real: the CAT I/II/III severity rating on
+# every rule below, verified against cyber.trackr.live's published STIG
+# data (see data/stig_rules.json). The point-deduction weights themselves
+# (CAT I costs more than CAT II) are a defensible, clearly-labeled
+# illustrative model built on that real severity data.
 SEVERITY_WEIGHTS = {"CAT I": 20, "CAT II": 10, "CAT III": 5}
 POAM_PRIORITY_BY_SEVERITY = {"CAT I": "immediate", "CAT II": "30-day", "CAT III": "90-day"}
 
