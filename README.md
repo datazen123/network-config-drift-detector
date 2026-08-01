@@ -16,6 +16,21 @@ Claude, and not a person reading the diff by eye - the diff, the score,
 and every pass/FAIL decision are computed in code, before Claude ever
 sees the result.
 
+## Contents
+
+- [Compliance scorecard and POA&M drafting](#compliance-scorecard-and-poam-drafting)
+- [Why this exists](#why-this-exists)
+- [What's real vs. illustrative](#whats-real-vs-illustrative)
+- [Architecture](#architecture)
+- [Live result](#live-result)
+- [Closing the loop on a real, previously-honestly-reported limitation](#closing-the-loop-on-a-real-previously-honestly-reported-limitation)
+- [Prerequisites](#prerequisites)
+- [Running it](#running-it)
+- [Troubleshooting](#troubleshooting)
+- [Tests + CI](#tests--ci)
+- [Security notes](#security-notes)
+- [Deployment path](#deployment-path)
+
 ## Compliance scorecard and POA&M drafting
 
 Every STIG rule in `data/stig_rules.json` carries its real CAT I/II/III
