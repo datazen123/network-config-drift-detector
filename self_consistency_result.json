@@ -1,0 +1,97 @@
+{
+  "diff:0": {
+    "severities_by_sample": [
+      "critical"
+    ],
+    "consensus": null,
+    "unanimous": false,
+    "note": "only 1/3 samples produced a verified finding for this id"
+  },
+  "diff:2": {
+    "severities_by_sample": [
+      "high"
+    ],
+    "consensus": null,
+    "unanimous": false,
+    "note": "only 1/3 samples produced a verified finding for this id"
+  },
+  "diff:3": {
+    "severities_by_sample": [
+      "low",
+      "low"
+    ],
+    "consensus": null,
+    "unanimous": false,
+    "note": "only 2/3 samples produced a verified finding for this id"
+  },
+  "diff:4": {
+    "severities_by_sample": [
+      "low",
+      "low"
+    ],
+    "consensus": null,
+    "unanimous": false,
+    "note": "only 2/3 samples produced a verified finding for this id"
+  },
+  "diff:5": {
+    "severities_by_sample": [
+      "high"
+    ],
+    "consensus": null,
+    "unanimous": false,
+    "note": "only 1/3 samples produced a verified finding for this id"
+  },
+  "diff:6": {
+    "severities_by_sample": [
+      "high"
+    ],
+    "consensus": null,
+    "unanimous": false,
+    "note": "only 1/3 samples produced a verified finding for this id"
+  },
+  "diff:7": {
+    "severities_by_sample": [
+      "medium",
+      "medium",
+      "medium"
+    ],
+    "consensus": "medium",
+    "unanimous": true
+  },
+  "diff:8": {
+    "severities_by_sample": [
+      "critical",
+      "critical",
+      "critical"
+    ],
+    "consensus": "critical",
+    "unanimous": true
+  },
+  "interface:GigabitEthernet0/2": {
+    "severities_by_sample": [
+      "high",
+      "high",
+      "high"
+    ],
+    "consensus": "high",
+    "unanimous": true
+  },
+  "stig:V-215668": {
+    "severities_by_sample": [
+      "high",
+      "high",
+      "high"
+    ],
+    "consensus": "high",
+    "unanimous": true
+  },
+  "stig:V-215687": {
+    "severities_by_sample": [
+      "critical",
+      "critical",
+      "critical"
+    ],
+    "consensus": "critical",
+    "unanimous": true
+  }
+}

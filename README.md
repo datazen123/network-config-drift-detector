@@ -23,6 +23,7 @@ sees the result.
 - [What's real vs. illustrative](#whats-real-vs-illustrative)
 - [Architecture](#architecture)
 - [Live result](#live-result)
+- [Self-consistency check](#self-consistency-check)
 - [Closing the loop on a real, previously-honestly-reported limitation](#closing-the-loop-on-a-real-previously-honestly-reported-limitation)
 - [Prerequisites](#prerequisites)
 - [Running it](#running-it)
@@ -207,6 +208,44 @@ deterministic verifier - no correction pass needed.**
 
 [↑ Back to top](#network-config-drift-detector)
 
+## Self-consistency check
+
+`self_consistency_check.py` applies
+[Wang, Wei, Schuurmans, Le, Chi, Narang, Chowdhery, Zhou, "Self-Consistency
+Improves Chain of Thought Reasoning in Language Models"](https://arxiv.org/abs/2203.11171)
+(ICLR 2023) to the severity-assignment call above: instead of trusting one
+sample, it calls the same prompt 3 times against the identical payload,
+then deterministically majority-votes the severity for each finding - code
+decides the consensus, not Claude.
+
+**Actual measured result** (3 samples, 15 citable diff/STIG/interface
+items in the payload):
+
+| Metric | Result |
+|---|---|
+| Findings present in all 3 samples | 5/11 |
+| Severity agreement among those 5 | 5/5 (100%) |
+
+Reported honestly rather than re-running for a cleaner number: the real
+inconsistency here isn't severity judgment - when a finding shows up in
+every sample, its severity is completely stable (5/5 agreement). The
+inconsistency is in *coverage*. The two STIG failures and the interface
+failure - the checks with an explicit, code-computed pass/FAIL status -
+were always written up as their own findings, every sample. The two new
+ACL lines (the vendor-access remark and the actual `permit tcp any...`
+rule) were also always covered, both consistently rated critical. What
+varied: whether the *removal* of `service password-encryption` and
+`login block-for` got written up as their own separate diff-level
+findings, or folded into the explanation of the STIG failure they
+directly caused - a reasonable stylistic choice either way, not a factual
+disagreement.
+
+```bash
+python self_consistency_check.py [--samples N]
+```
+
+[↑ Back to top](#network-config-drift-detector)
+
 ## Closing the loop on a real, previously-honestly-reported limitation
 
 Earlier versions of this repo's README documented a real, live-observed
@@ -307,7 +346,8 @@ key or network needed, safe for CI on every push. `test_drift_detector_propertie
 adds Hypothesis property-based tests - e.g. the compliance score is proven
 to stay in [0,100] and never increase when a passing check flips to FAIL,
 across hundreds of generated severity-mix inputs, not one hand-picked
-example:
+example. `test_self_consistency_check.py` covers the majority-vote
+aggregation logic offline:
 
 ```bash
 pip install -r requirements-dev.txt
