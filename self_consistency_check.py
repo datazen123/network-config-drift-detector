@@ -44,10 +44,10 @@ def sample_once(client: AnthropicClient, payload: dict, id_index: dict) -> dict:
     counted."""
     response = client.create(
         system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": json.dumps(payload, indent=2)}],
+        messages=[{"role": "user", "content": json.dumps(payload, indent=2)}, {"role": "assistant", "content": "{"}],
         max_tokens=3000,
     )
-    text = "".join(b.text for b in response.content if b.type == "text")
+    text = "{" + "".join(b.text for b in response.content if b.type == "text")
     report = extract_json(text)
     findings = verify_findings(report["findings"], id_index)
     return {f["source_id"]: f for f in findings if f["verified"] and f.get("source_id")}
