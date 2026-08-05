@@ -23,6 +23,7 @@ sees the result.
 - [What's real vs. illustrative](#whats-real-vs-illustrative)
 - [Architecture](#architecture)
 - [Live result](#live-result)
+- [Remediation verified: does the fix actually work?](#remediation-verified-does-the-fix-actually-work)
 - [Self-consistency check](#self-consistency-check)
 - [Prompt injection resistance test](#prompt-injection-resistance-test)
 - [Closing the loop on a real, previously-honestly-reported limitation](#closing-the-loop-on-a-real-previously-honestly-reported-limitation)
@@ -76,9 +77,8 @@ Findings that get this wrong are flagged the same
 ## Why this exists
 
 Grounded in real federal award data, verified via USASpending.gov (not
-just press/web claims), plus SecureBine's own public statements, with one
-signal below that's directionally real but not yet independently
-confirmed in award data:
+just press/web claims), with one signal below that's directionally real
+but not yet independently confirmed in award data:
 
 - **Confirmed, recurring, Korea-specific**: an **IDIQ** (Indefinite
   Delivery/Indefinite Quantity - a federal contract vehicle covering
@@ -99,20 +99,21 @@ confirmed in award data:
   operations/monitoring contract has been posted on SAM.gov** as of a July
   2026 check. This repo anticipates that need ahead of the cutover date,
   it doesn't point to an already-funded one.
-- **SecureBine's own public announcement**: SecureBine has publicly
-  confirmed a multi-year IDIQ services contract supporting USACISA-P
-  requirements at Camp Humphreys, in partnership with GovCIO - matching
-  GovCIO's own stated USACISA-P scope ("service and maintain all IT and
+- **Same program, confirmed award-holders**: SAIC and GDIT hold/held the
+  actual USACISA-P network-operations task orders at Camp Humphreys - see
+  `claude-ops-agent` for the full citation.
+- **A Korea-based, USFK-focused defense IT contractor's own public
+  announcement**: one such contractor has publicly confirmed a
+  multi-year IDIQ services contract supporting USACISA-P requirements at
+  Camp Humphreys, in partnership with a larger prime - matching that
+  prime's own stated USACISA-P scope ("service and maintain all IT and
   network services across the coalition network, CENTRIXS-K"). This
   doesn't yet appear in USASpending's prime/subaward data (a normal
   award-to-posting lag, not a reason to doubt a company's own public
-  statement about its own contract). (Also confirmed, same program: SAIC
-  and GDIT hold/held the actual USACISA-P network-operations task orders
-  - see `claude-ops-agent`.)
-- SecureBine's own certified technology partnerships are **Cisco and
-  Juniper** specifically - this repo's actual named vendor, not an
-  adjacent guess (this one is a direct fact about SecureBine's public
-  site, not something that needs award-data verification).
+  statement about its own contract).
+- That same contractor's certified technology partnerships include
+  **Cisco and Juniper** specifically - this repo's actual named vendor,
+  not an adjacent guess.
 
 [↑ Back to top](#network-config-drift-detector)
 
@@ -206,6 +207,46 @@ drafting a POA&M milestone and priority for each (immediate for the CAT I
 finding, 30-day for the CAT II), and flagging the new ACL permit rule as
 a CRITICAL, unapproved perimeter opening. **11/11 findings passed the
 deterministic verifier - no correction pass needed.**
+
+[↑ Back to top](#network-config-drift-detector)
+
+## Remediation verified: does the fix actually work?
+
+The 65/100 result above is the real, as-found finding, and it stays on
+the record exactly as measured - this section doesn't change it. It
+answers a different, follow-on question: **if the recommended fixes are
+actually applied, does the score genuinely improve?**
+
+`remediate_and_rescan.py` applies exactly 3 commands - the real fix text
+already recommended for the two failed STIG rules
+(`service password-encryption`, `login block-for 900 attempts 3 within
+120`) plus the interface shutdown fix - to a copy of the drifted config,
+then re-scans it with the **same deterministic functions**
+`drift_detector.py` itself uses. Not a new scoring path built to look
+good for this section.
+
+**Actual measured result:**
+
+| | Before | After |
+|---|---|---|
+| Compliance scorecard | 65/100 | **100/100** |
+| CAT I open | 1 | 0 |
+| CAT II open | 1 | 0 |
+| CAT III/ungraded open | 1 | 0 |
+
+**Deliberately left untouched**: the new ACL rule permitting SSH from any
+source (`permit tcp any host 10.20.1.5 eq 22`). It's a real finding this
+repo's own Live result already flags as CRITICAL, but it isn't part of
+the STIG-scored compliance calculation, and removing a firewall rule a
+vendor may still need for active troubleshooting is a human decision -
+not something a script should auto-apply without review. It's confirmed
+still present in `data/remediated_config.txt` after remediation, and the
+script says so explicitly rather than silently going further than it
+should.
+
+```bash
+python remediate_and_rescan.py
+```
 
 [↑ Back to top](#network-config-drift-detector)
 
@@ -396,7 +437,11 @@ key or network needed, safe for CI on every push. `test_drift_detector_propertie
 adds Hypothesis property-based tests - e.g. the compliance score is proven
 to stay in [0,100] and never increase when a passing check flips to FAIL,
 across hundreds of generated severity-mix inputs, not one hand-picked
-example. `test_injection_test.py` covers the adversarial-fixture setup
+example. `test_remediate_and_rescan.py` confirms the recommended fixes
+actually restore all 3 STIG-scored checks to passing and bring the score
+to 100, that the as-found 65/100 result stays reproducible unchanged,
+and that the out-of-scope ACL rule is left untouched.
+`test_injection_test.py` covers the adversarial-fixture setup
 logic offline. `test_self_consistency_check.py` covers the majority-vote
 aggregation logic offline:
 

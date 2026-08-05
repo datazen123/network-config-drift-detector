@@ -1,0 +1,67 @@
+{
+  "before": {
+    "score": {
+      "score": 65,
+      "deductions": [
+        {
+          "id": "V-215687",
+          "severity": "CAT I",
+          "points": 20
+        },
+        {
+          "id": "V-215668",
+          "severity": "CAT II",
+          "points": 10
+        },
+        {
+          "id": "interface:GigabitEthernet0/2",
+          "severity": "CAT III",
+          "points": 5
+        }
+      ],
+      "cat_i_open": 1,
+      "cat_ii_open": 1,
+      "cat_iii_open": 1
+    },
+    "stig_failures": [
+      {
+        "rule_id": "V-215687",
+        "title": "Password Storage Protection",
+        "requirement": "The Cisco router must only store cryptographic representations of passwords.",
+        "severity": "CAT I",
+        "cci": "CCI-000196",
+        "nist_800_53_control": "IA-5",
+        "status": "FAIL"
+      },
+      {
+        "rule_id": "V-215668",
+        "title": "Failed Login Attempt Lockout",
+        "requirement": "The Cisco router must enforce a limit of three consecutive invalid logon attempts, locking the account for 15 minutes.",
+        "severity": "CAT II",
+        "cci": "CCI-000044",
+        "nist_800_53_control": "AC-7",
+        "status": "FAIL"
+      }
+    ],
+    "interface_failures": [
+      {
+        "interface": "GigabitEthernet0/2",
+        "should_be_shutdown": true,
+        "is_shutdown": false,
+        "status": "FAIL"
+      }
+    ]
+  },
+  "after": {
+    "score": {
+      "score": 100,
+      "deductions": [],
+      "cat_i_open": 0,
+      "cat_ii_open": 0,
+      "cat_iii_open": 0
+    },
+    "stig_failures": [],
+    "interface_failures": []
+  },
+  "acl_rule_left_untouched": true
+}
